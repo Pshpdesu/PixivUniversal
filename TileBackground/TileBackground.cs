@@ -79,7 +79,7 @@ namespace TileBackground
                 (bool isAuthed, string username, string password) = getAuth();
                 if (!isAuthed)
                 {
-                    deferral.Complete();
+                    deferral?.Complete();
                     return;
                 }
                 Pixeez.AuthResult token;
