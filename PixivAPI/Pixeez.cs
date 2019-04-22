@@ -878,5 +878,18 @@ string offset = null, bool? include_ranking_illusts = null, string bookmark_illu
 
             return await this.AccessApiAsync<Paginated<NormalWork>>(MethodType.GET, url, param);
         }
+        public async Task<string> SendComment(long id, string comment, int parrentCommentId)
+        {
+            var url = "https://public-api.secure.pixiv.net/v1/illust/comment/add";
+            var param = new Dictionary<string, string>
+            {
+                {"illust_id", id.ToString() },
+                {"",comment},
+                {"parent_comment_id", parrentCommentId.ToString() }
+
+            };
+
+            return await this.AccessNewApiAsync<string>(url,true,param,MethodType.POST);
+        }
     }
 }
