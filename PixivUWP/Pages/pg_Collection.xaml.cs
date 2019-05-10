@@ -40,11 +40,19 @@ using PixivUWP.Data;
 
 namespace PixivUWP.Pages
 {
+    public class PgCollectionBackInfo
+    {
+        public string NextPublicUrl { get; set; }
+        public string NextPrivateUrl { get; set; }
+    }
+
     /// <summary>
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
+    /// 
     public sealed partial class pg_Collection : Windows.UI.Xaml.Controls.Page, DetailPage.IRefreshable,IBackable,IBackHandlable
     {
+
         ItemViewList<IllustWork> list;
         public pg_Collection()
         {
@@ -57,7 +65,7 @@ namespace PixivUWP.Pages
         int selectedindex = -1;
 
         public BackInfo GenerateBackInfo()
-            => new BackInfo { list = this.list, param = this.nexturl, selectedIndex = MasterListView.SelectedIndex };
+            => new BackInfo { list = this.list, param = new PgCollectionBackInfo{ NextPublicUrl= this.nextPublicUrl, NextPrivateUrl = this.nextPrivateUrl }, selectedIndex = MasterListView.SelectedIndex };
 
         private async Task firstLoadAsync()
         {
@@ -79,9 +87,36 @@ namespace PixivUWP.Pages
             _isLoading = true;
             try
             {
-                var root = nexturl == null ? await Data.TmpData.CurrentAuth.Tokens.GetUserFavoriteWorksAsync(Data.TmpData.CurrentAuth.Authorize.User.Id.Value) : await Data.TmpData.CurrentAuth.Tokens.AccessNewApiAsync<Illusts>(nexturl);
-                nexturl = root.next_url ?? string.Empty;
-                foreach (var one in root.illusts)
+                Illusts publicRoot = new Illusts();
+                Illusts privateRoot = new Illusts();
+                if (nextPublicUrl == null)
+                {
+                    publicRoot = await Data.TmpData.CurrentAuth.Tokens.GetUserFavoriteWorksAsync(Data.TmpData.CurrentAuth.Authorize.User.Id.Value);
+                }
+                else
+                {
+                    if(nextPublicUrl!="")
+                        publicRoot = await Data.TmpData.CurrentAuth.Tokens.AccessNewApiAsync<Illusts>(nextPublicUrl);
+                }
+                nextPublicUrl = publicRoot.next_url ?? string.Empty;
+
+
+                if (nextPrivateUrl == null)
+                {
+                    privateRoot = await Data.TmpData.CurrentAuth.Tokens.GetUserFavoriteWorksAsync(Data.TmpData.CurrentAuth.Authorize.User.Id.Value, "private");
+                }
+                else {
+                    if(nextPrivateUrl!="")
+                        privateRoot = await Data.TmpData.CurrentAuth.Tokens.AccessNewApiAsync<Illusts>(nextPrivateUrl);
+                }
+                nextPrivateUrl = privateRoot.next_url ?? string.Empty;
+
+                foreach (var one in publicRoot.illusts)
+                {
+                    if (!list.Contains(one, Data.WorkEqualityComparer.Default))
+                        list.Add(one);
+                }
+                foreach (var one in privateRoot.illusts)
                 {
                     if (!list.Contains(one, Data.WorkEqualityComparer.Default))
                         list.Add(one);
@@ -96,7 +131,8 @@ namespace PixivUWP.Pages
             }
         }
 
-        string nexturl = null;
+        string nextPublicUrl = null;
+        string nextPrivateUrl = null;
         //private async void List_LoadingMoreItems(ItemViewList<IllustWork> sender, Tuple<Yinyue200.OperationDeferral.OperationDeferral<uint>, uint> args)
         //{
         //    var nowcount = list.Count;
@@ -131,7 +167,9 @@ namespace PixivUWP.Pages
                     Data.TmpData.menuItem.SelectedIndex = 4;
                     Data.TmpData.menuBottomItem.SelectedIndex = -1;
                     list = ((BackInfo)((object[])e.Parameter)[1]).list as ItemViewList<IllustWork>;
-                    nexturl = ((BackInfo)((object[])e.Parameter)[1]).param as string;
+                    var nextInfo = ((BackInfo)((object[])e.Parameter)[1]).param as PgCollectionBackInfo;
+                    nextPublicUrl = nextInfo.NextPublicUrl;
+                    nextPrivateUrl = nextInfo.NextPrivateUrl;
                     selectedindex = ((BackInfo)((object[])e.Parameter)[1]).selectedIndex;
                 }
                 else
