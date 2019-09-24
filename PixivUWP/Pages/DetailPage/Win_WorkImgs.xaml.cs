@@ -127,22 +127,13 @@ namespace PixivUWP.Pages.DetailPage
             }
 
             var sv = pl.Parent as ScrollViewer;
-            int max = 1;
-            double parentMax = 1;
-            double kvalue = 1;
             if (page.Item2.PixelHeight > page.Item2.PixelWidth)
             {
-                max = page.Item2.PixelHeight;
-                parentMax = sv.ActualHeight;
-                kvalue = parentMax / max;
-                img.Height = img.Height * kvalue;
+                img.Height = sv.ActualHeight;
             }
             else
             {
-                max = page.Item2.PixelWidth;
-                parentMax = sv.ActualWidth;
-                kvalue = parentMax / max;
-                img.Width = img.Width * kvalue;
+                img.Width = sv.ActualWidth;
             }
 
         }
