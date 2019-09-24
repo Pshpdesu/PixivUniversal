@@ -30,6 +30,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
+using System.Diagnostics;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -43,103 +45,111 @@ namespace PixivUWP.Pages.DetailPage
         public Win_WorkImgs()
         {
             this.InitializeComponent();
+            urlBitmaps = new Dictionary<ImageUrls, (bool, BitmapImage)>();
         }
+        Dictionary<ImageUrls, (bool, BitmapImage)> urlBitmaps;
+
         IllustWork work;
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
             work = e.Parameter as IllustWork;
             flipview.ItemsSource = work.meta_pages;
+
+            foreach (var pic in work.meta_pages)
+            {
+                var newBitmap = new BitmapImage();
+                //newBitmap.DownloadProgress += (s, eargs) =>
+                //{
+                //    if (eargs.Progress == 100)
+                //    {
+                //        urlBitmaps.TryGetValue(pic.ImageUrls, out var bm);
+                //        urlBitmaps[pic.ImageUrls] = (true, bm.Item2);
+                //    }
+                //};
+                urlBitmaps.Add(pic.ImageUrls, (false, newBitmap));
+            }
             flipview.SelectedIndex = 0;
         }
+
         Dictionary<string, WeakReference<Windows.UI.Xaml.Media.Imaging.BitmapImage>> imagecache = new Dictionary<string, WeakReference<Windows.UI.Xaml.Media.Imaging.BitmapImage>>();
-        Dictionary<Image, (System.Threading.CancellationTokenSource, System.Threading.SemaphoreSlim)> tokens = new Dictionary<Image, (System.Threading.CancellationTokenSource, System.Threading.SemaphoreSlim)>();
+        //Dictionary<Image, (System.Threading.CancellationTokenSource, System.Threading.SemaphoreSlim)> tokens = new Dictionary<Image, (System.Threading.CancellationTokenSource, System.Threading.SemaphoreSlim)>();
         private async void Image_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var page=args.NewValue as MetaPages;
-            if(sender is Panel pl)
+            var metapage = args.NewValue as MetaPages;
+            if (metapage == null)
             {
-                if(pl.FindName("img") is Image img)
-                {
-                    img.Source = null;
-                    if (pl.FindName("pro") is ProgressRing pro)
-                    {
-                        var cancellationTokenSource = new System.Threading.CancellationTokenSource();                     
-                        if (tokens.TryGetValue(img, out var token))
-                        {
-                            token.Item1.Cancel();
-                            await token.Item2.WaitAsync();
-                        }
-                        var semaphore = new System.Threading.SemaphoreSlim(0,1);
-                        tokens.Add(img, (cancellationTokenSource,semaphore));
-                        ProgressBarVisualHelper.SetYFHelperVisibility(pro, true);
-                        try
-                        {
-                            var url = page.ImageUrls.Original ?? page.ImageUrls.Large ?? page.ImageUrls.Medium;
-                            async Task<Windows.UI.Xaml.Media.Imaging.BitmapImage> getimg()
-                            {
-                                using (var stream = await Data.TmpData.CurrentAuth.Tokens.SendRequestAsync(Pixeez.MethodType.GET, url, cancellationToken: cancellationTokenSource.Token))
-                                {
-                                    var bitmap = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
-                                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                                    var stream2 = (await stream.GetResponseStreamAsync()).AsRandomAccessStream();
-                                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                                    await bitmap.SetSourceAsync(stream2);
-                                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                                    return bitmap;
-                                }
-                            }
-                            Windows.UI.Xaml.Media.Imaging.BitmapImage bitmapImage;
-                            if (imagecache.TryGetValue(url,out var weakReference))
-                            {
-                                if(weakReference.TryGetTarget(out bitmapImage))
-                                {
-                                    img.Source = bitmapImage;
-                                }
-                                else
-                                {
-                                    bitmapImage = await getimg();
-                                    weakReference.SetTarget(bitmapImage);                                
-                                }
-                            }
-                            else
-                            {
-                                bitmapImage = await getimg();
-                                imagecache[url] = new WeakReference<Windows.UI.Xaml.Media.Imaging.BitmapImage>(bitmapImage);
-                            }
-                            img.Source = bitmapImage;
-                        }
-                        catch(OperationCanceledException)
-                        {
+                return;
+            }
+            var page = urlBitmaps[metapage.ImageUrls];
+            Panel pl = sender as Panel;
+            if (pl == null)
+            {
+                return;
+            }
 
-                        }
-                        catch
-                        {
-                            new Controls.MyToast("有图片加载失败").Show();
-                        }
-                        finally
-                        {
-                            ProgressBarVisualHelper.SetYFHelperVisibility(pro, false);
-                            tokens.Remove(img);
-                            semaphore.Release();
-                        }
+            Image img = pl.FindName("img") as Image;
+            if (img == null)
+            {
+                return;
+
+            }
+            img.Source = null;
+            ProgressRing progressRing = pl.FindName("pro") as ProgressRing;
+            try
+            {
+                if (page.Item1 == false)
+                {
+                    ProgressBarVisualHelper.SetYFHelperVisibility(progressRing, true);
+                    using (var stream = await Data.TmpData.CurrentAuth.Tokens.SendRequestAsync(
+                                Pixeez.MethodType.GET,
+                                metapage.ImageUrls.Original ?? metapage.ImageUrls.Large ?? metapage.ImageUrls.Medium))
+                    {
+                        await page.Item2.SetSourceAsync((await stream.GetResponseStreamAsync()).AsRandomAccessStream());
+                        img.Source = page.Item2;
+                        urlBitmaps[metapage.ImageUrls] = (true, page.Item2);
+
                     }
                 }
                 else
                 {
-                    //RoutedEventHandler reh= (se, ee) =>
-                    //{
-                    //    Image_DataContextChanged(sender, args);
-                    //};
-                    //pl.Loaded += reh;
+                    img.Source = page.Item2;
                 }
+            }
+
+            catch (Exception e)
+            {
 
             }
+            finally
+            {
+                ProgressBarVisualHelper.SetYFHelperVisibility(progressRing, false);
+            }
+
+            var sv = pl.Parent as ScrollViewer;
+            int max = 1;
+            double parentMax = 1;
+            double kvalue = 1;
+            if (page.Item2.PixelHeight > page.Item2.PixelWidth)
+            {
+                max = page.Item2.PixelHeight;
+                parentMax = sv.ActualHeight;
+                kvalue = parentMax / max;
+                img.Height = img.Height * kvalue;
+            }
+            else
+            {
+                max = page.Item2.PixelWidth;
+                parentMax = sv.ActualWidth;
+                kvalue = parentMax / max;
+                img.Width = img.Width * kvalue;
+            }
+
         }
 
         private void AppBarButton_Click(object sender, RoutedEventArgs e)
         {
-            if((sender as AppBarToggleButton).IsChecked==false)
+            if ((sender as AppBarToggleButton).IsChecked == false)
             {
                 Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().ExitFullScreenMode();
             }
@@ -155,7 +165,7 @@ namespace PixivUWP.Pages.DetailPage
 
         private async void AppBarButton_Click_1(object sender, RoutedEventArgs e)
         {
-            if(sender is AppBarButton downloadbutton&& flipview.SelectedValue is MetaPages sv)
+            if (sender is AppBarButton downloadbutton && flipview.SelectedValue is MetaPages sv)
             {
                 downloadbutton.IsEnabled = false;
                 try
@@ -163,7 +173,7 @@ namespace PixivUWP.Pages.DetailPage
                     var filename = work.Id + "_p" + flipview.SelectedIndex.ToString();
                     await Windows.ApplicationModel.Core.CoreApplication.MainView.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
                     {
-                        await Data.DownloadManager.AddTaskAsync(sv.ImageUrls.Original ?? sv.ImageUrls.Large ?? sv.ImageUrls.Medium,filename);
+                        await Data.DownloadManager.AddTaskAsync(sv.ImageUrls.Original ?? sv.ImageUrls.Large ?? sv.ImageUrls.Medium, filename);
                     });
                 }
                 finally
