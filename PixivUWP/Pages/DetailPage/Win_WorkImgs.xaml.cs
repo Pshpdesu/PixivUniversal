@@ -72,8 +72,7 @@ namespace PixivUWP.Pages.DetailPage
             flipview.SelectedIndex = 0;
         }
 
-        Dictionary<string, WeakReference<Windows.UI.Xaml.Media.Imaging.BitmapImage>> imagecache = new Dictionary<string, WeakReference<Windows.UI.Xaml.Media.Imaging.BitmapImage>>();
-        //Dictionary<Image, (System.Threading.CancellationTokenSource, System.Threading.SemaphoreSlim)> tokens = new Dictionary<Image, (System.Threading.CancellationTokenSource, System.Threading.SemaphoreSlim)>();
+        
         private async void Image_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var metapage = args.NewValue as MetaPages;
