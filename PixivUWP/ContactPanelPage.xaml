@@ -28,8 +28,8 @@
         </DataTemplate>
     </Page.Resources>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <TextBlock x:Name="info" VerticalAlignment="Center" HorizontalAlignment="Center" HorizontalTextAlignment="Center" Visibility="Collapsed">Something is wrong</TextBlock>
-        <TextBlock x:Name="logininfo" VerticalAlignment="Center" HorizontalAlignment="Center" HorizontalTextAlignment="Center" Visibility="Visible">Logging in...</TextBlock>
+        <TextBlock x:Name="info" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">Something is wrong</TextBlock>
+        <TextBlock x:Name="logininfo" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Visible">Logging in...</TextBlock>
         <ScrollViewer ViewChanged="viewer_ViewChanged" x:Name="viewer" Visibility="Collapsed" HorizontalScrollMode="Disabled" VerticalScrollMode="Auto" VerticalScrollBarVisibility="Auto">
             <ListView
                     x:Name="WorksListView"
