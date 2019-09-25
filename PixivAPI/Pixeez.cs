@@ -632,7 +632,7 @@ string offset = null, bool? include_ranking_illusts = null, string bookmark_illu
         /// <para>- <c>bool</c> includeSanityLevel (optional)</para>
         /// </summary>
         /// <returns>UsersWorks. (Pagenated)</returns>
-        public async Task<RecommendedRootobject> GetMyFollowingWorksAsync(string restrict = "all", int? offset = null)
+        public async Task<RecommendedRootobject> GetMyFollowingWorksAsync(string restrict="public",int? offset= null)
         {
             var url = "https://app-api.pixiv.net/v2/illust/follow";
 
