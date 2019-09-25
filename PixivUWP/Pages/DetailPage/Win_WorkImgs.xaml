@@ -24,15 +24,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.-
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        
         <FlipView x:Name="flipview" Background="{ThemeResource AccentButtonForegroundPointerOver}">
             <FlipView.ItemTemplate>
                 <DataTemplate>
-                    <FlipViewItem>
+                    <ScrollViewer ZoomMode="Enabled"
+                                  MinZoomFactor="1">
                         <Grid DataContextChanged="Image_DataContextChanged">
-                            <Image x:Name="img" />
+                            <Image x:Name="img"/>
                             <ProgressRing x:Name="pro"/>
                         </Grid>
-                    </FlipViewItem>
+                    </ScrollViewer>
                 </DataTemplate>
             </FlipView.ItemTemplate>
         </FlipView>
