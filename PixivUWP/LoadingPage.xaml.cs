@@ -40,6 +40,8 @@ using Pixeez;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.System;
+using RePixivAPI;
+using static RePixivAPI.Helpers.AuthenticationConstants;
 
 //“空白页”项模板在 http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409 上有介绍
 
@@ -142,6 +144,11 @@ namespace PixivUWP
                 Pixeez.AuthResult token = default;
                 async Task 正常加载tokenAsync()
                 {
+                    var test = await PixivAPIClient.GetPixivApiClient(GrantType.Password, new Credentials()
+                    {
+                        Username = username,
+                        Password = password
+                    });
                     token = await Auth.AuthorizeAsync(username, password, null);
                 }
                 if (Data.AppDataHelper.ContainKey(Data.AppDataHelper.RefreshTokenKey))

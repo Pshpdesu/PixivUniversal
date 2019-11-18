@@ -385,6 +385,10 @@
       <Project>{64a77199-1953-453a-9f5e-e387fb022b9d}</Project>
       <Name>PixivAPI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RePixivAPI\RePixivAPI.csproj">
+      <Project>{d439f0fb-1860-46bb-925f-415eee480062}</Project>
+      <Name>RePixivAPI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TileBackground\TileBackground.csproj">
       <Project>{f3c2f113-b59d-42ee-b3c0-08646a8056e8}</Project>
       <Name>TileBackground</Name>
