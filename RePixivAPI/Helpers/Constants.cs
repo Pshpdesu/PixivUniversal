@@ -40,7 +40,7 @@ namespace RePixivAPI.Helpers
                 if (string.IsNullOrEmpty(data)) return null;
                 using (MD5 md5hash = MD5.Create())
                 {
-                    var res = md5hash.ComputeHash(Encoding.UTF8.GetBytes(data));
+                    var res = md5hash.ComputeHash(Encoding.UTF8.GetBytes(data.Trim()));
                     StringBuilder builder = new StringBuilder();
                     for (int i = 0; i < res.Length; i++)
                         builder.Append(res[i].ToString("x2"));

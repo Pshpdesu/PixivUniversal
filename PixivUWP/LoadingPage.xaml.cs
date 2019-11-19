@@ -208,7 +208,7 @@ namespace PixivUWP
 
         private async void status_Click(object sender, RoutedEventArgs e)
         {
-            await Launcher.LaunchUriAsync(new Uri(@"https://github.com/PixeezPlusProject/PixivUniversal/blob/developing/TroubleShoot.md"));
+            //await Launcher.LaunchUriAsync(new Uri(@"https://github.com/PixeezPlusProject/PixivUniversal/blob/developing/TroubleShoot.md"));
             await rollBackAnimation();
         }
 

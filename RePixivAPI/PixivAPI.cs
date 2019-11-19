@@ -28,6 +28,7 @@ namespace RePixivAPI
         public static async Task<PixivAPIClient> GetPixivApiClient(GrantType grantType, Credentials credentials)
         {
             PixivAPIClient client = new PixivAPIClient();
+            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, new Uri("http://govno.com/test"));
             await client.Authorize(grantType, credentials);
             return client;
         }
