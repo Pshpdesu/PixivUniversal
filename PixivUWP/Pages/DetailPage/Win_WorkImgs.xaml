@@ -33,10 +33,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.-
                                   CanDrag="False"
                                   HorizontalScrollBarVisibility="Auto"
                                   ManipulationMode="All"
-                                  MinZoomFactor="0.7"
+                                  MinZoomFactor="1"
                                   >
-                        <Grid DataContextChanged="Image_DataContextChanged">
-                            <Image x:Name="img"/>
+                        <Grid x:Name="grid" DataContextChanged="Image_DataContextChanged">
+                            <Image x:Name="img" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Stretch="Uniform"/>
                             <ProgressRing x:Name="pro"/>
                         </Grid>
                     </ScrollViewer>

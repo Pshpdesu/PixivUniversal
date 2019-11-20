@@ -126,14 +126,15 @@ namespace PixivUWP.Pages.DetailPage
             }
 
             var sv = pl.Parent as ScrollViewer;
-            if (page.Item2.PixelHeight > page.Item2.PixelWidth)
-            {
-                img.Height = sv.ActualHeight;
-            }
-            else
-            {
-                img.Width = sv.ActualWidth;
-            }
+            //if (page.Item2.PixelHeight > page.Item2.PixelWidth)
+            //{
+            //    img.Height = sv.ActualHeight;
+            //    //sv.MinZoomFactor = (float)(img.Height / sv.ActualHeight);
+            //}
+            //else
+            //{
+            //    img.Width = sv.ActualWidth;
+            //}
 
         }
 
