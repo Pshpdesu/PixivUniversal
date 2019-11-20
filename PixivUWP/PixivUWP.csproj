@@ -11,7 +11,7 @@
     <AssemblyName>PixivUWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.17763.0</TargetPlatformVersion>
+    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -344,10 +344,10 @@
     <SDKReference Include="Microsoft.VCLibs, Version=14.0">
       <Name>Visual C++ 2015 Runtime for Universal Windows Platform Apps</Name>
     </SDKReference>
-    <SDKReference Include="WindowsDesktop, Version=10.0.17134.0">
+    <SDKReference Include="WindowsDesktop, Version=10.0.18362.0">
       <Name>Windows Desktop Extensions for the UWP</Name>
     </SDKReference>
-    <SDKReference Include="WindowsMobile, Version=10.0.17134.0">
+    <SDKReference Include="WindowsMobile, Version=10.0.18362.0">
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
@@ -381,9 +381,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PixivAPI\PixivAPI.csproj">
-      <Project>{64a77199-1953-453a-9f5e-e387fb022b9d}</Project>
-      <Name>PixivAPI</Name>
+    <ProjectReference Include="..\PixivAPIUWP\PixivAPIUWP.csproj">
+      <Project>{a17bb125-e6ad-4d90-8d54-92b5fb45fcad}</Project>
+      <Name>PixivAPIUWP</Name>
     </ProjectReference>
     <ProjectReference Include="..\RePixivAPI\RePixivAPI.csproj">
       <Project>{d439f0fb-1860-46bb-925f-415eee480062}</Project>
