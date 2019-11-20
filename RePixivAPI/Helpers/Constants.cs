@@ -29,7 +29,10 @@ namespace RePixivAPI.Helpers
         static private Dictionary<string, string> AuthenticationHeaders { get; set; } =
             new Dictionary<string, string>()
             {
-                {"User-Agent", "PixivAndroidApp/5.0.64 (Android 6.0)"},
+                {"App-OS", "android"},
+                {"App-OS-Version", "9.0.16"},
+                {"App-Version", "5.0.156"},
+                {"User-Agent", "PixivAndroidApp/5.0.156 (Android 6.0)"}
             };
 
         static public Dictionary<string, string> GetAuthHeaders(string hash = "")
@@ -48,13 +51,14 @@ namespace RePixivAPI.Helpers
                 }
             }
             var time = DateTime.UtcNow.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:sszzz");
-            var clientHash = MD5Hash(time + HashSecret);
+            var clientHash = MD5Hash(string.Concat(time, HashSecret));
             Dictionary<string, string> headers = new Dictionary<string, string>
             {
                 { "X-Client-Time", time },
-                { "X-Client-Hash", hashData }
+                { "X-Client-Hash", clientHash },
             };
-            return headers.Concat(AuthenticationHeaders).ToDictionary(x=>x.Key, y=>y.Value);
+            //return AuthenticationHeaders;
+            return headers.Concat(AuthenticationHeaders).ToDictionary(x => x.Key, y => y.Value);
         }
 
         static private Dictionary<string, string> AuthorizeData { get; set; } =
@@ -62,7 +66,8 @@ namespace RePixivAPI.Helpers
             {
                 {"client_id", "MOBrBDS8blbauoSck0ZfDbtuzpyT"},
                 {"client_secret", "lsACyCD94FhDUtGTXi3QzcFE2uU1hqtDaKeqrdwj"},
-                { "get_secure_url", "1"},
+                { "get_secure_url", "true"},
+                { "include_policy", "true" }
             };
         static public Dictionary<string, string> GetAuthorizeContent(GrantType type, Credentials credentials)
         {
@@ -74,7 +79,6 @@ namespace RePixivAPI.Helpers
                         throw new UnauthorizedAccessException("Empty Password");
                     if (string.IsNullOrEmpty(credentials.Username))
                         throw new UnauthorizedAccessException("Empty Username");
-
                     additionalValues.Add("grant_type", "password");
                     additionalValues.Add("username", credentials.Username);
                     additionalValues.Add("password", credentials.Password);
