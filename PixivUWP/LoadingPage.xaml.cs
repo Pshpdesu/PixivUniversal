@@ -144,11 +144,11 @@ namespace PixivUWP
                 Pixeez.AuthResult token = default;
                 async Task 正常加载tokenAsync()
                 {
-                    var test = await PixivAPIClient.GetPixivApiClient(GrantType.Password, new Credentials()
-                    {
-                        Username = username,
-                        Password = password
-                    });
+                    //var test = await PixivAPIClient.GetPixivApiClient(GrantType.Password, new Credentials()
+                    //{
+                    //    Username = username,
+                    //    Password = password
+                    //});
                     token = await Auth.AuthorizeAsync(username, password, null);
                 }
                 if (Data.AppDataHelper.ContainKey(Data.AppDataHelper.RefreshTokenKey))
