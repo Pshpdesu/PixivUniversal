@@ -134,6 +134,9 @@ namespace Pixeez
             httpClient.DefaultRequestHeaders.Add(AuthConsts.AppOSVersion.Item1, AuthConsts.AppOSVersion.Item2);
             httpClient.DefaultRequestHeaders.Add(AuthConsts.AppVersion.Item1, AuthConsts.AppVersion.Item2);
             httpClient.DefaultRequestHeaders.Add(AuthConsts.UserAgent.Item1, AuthConsts.UserAgent.Item2);
+            var additionalHeaders = RePixivAPI.Helpers.AuthenticationConstants.GetAuthHeaders();
+            httpClient.DefaultRequestHeaders.Add("X-Client-Time",additionalHeaders["X-Client-Time"]);
+            httpClient.DefaultRequestHeaders.Add("X-Client-Hash", additionalHeaders["X-Client-Hash"]);
 
             FormUrlEncodedContent param;
             if (refreshtoken == null)
