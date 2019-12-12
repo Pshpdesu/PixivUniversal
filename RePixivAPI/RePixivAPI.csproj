@@ -122,9 +122,12 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ApiUrls\BasePixivApiService.cs" />
+    <Compile Include="ApiUrls\TService.cs" />
     <Compile Include="Helpers\ApiUrls.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\SSLConnection.cs" />
+    <Compile Include="ISuspendable.cs" />
     <Compile Include="Objects\Authorize.cs" />
     <Compile Include="Objects\BookmarkDetail.cs" />
     <Compile Include="Objects\Comment.cs" />
@@ -134,12 +137,14 @@
     <Compile Include="Objects\Paginated.cs" />
     <Compile Include="Objects\ProfileImageUrls.cs" />
     <Compile Include="Objects\Rank.cs" />
+    <Compile Include="Objects\Response.cs" />
     <Compile Include="Objects\User.cs" />
     <Compile Include="Objects\UsersFavoriteWork.cs" />
     <Compile Include="Objects\UsersWork.cs" />
     <Compile Include="Objects\Work.cs" />
     <Compile Include="Objects\WorkHelper.cs" />
     <Compile Include="PixivAPI.cs" />
+    <Compile Include="PixivAPICore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\RePixivAPI.rd.xml" />
   </ItemGroup>

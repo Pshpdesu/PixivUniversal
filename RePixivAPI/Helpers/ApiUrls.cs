@@ -9,5 +9,12 @@ namespace RePixivAPI.Helpers
     public static class ApiUrls
     {
         public static Uri AuthUrl { get; private set; } = new Uri("https://oauth.secure.pixiv.net/auth/token");
+        //public static Uri AuthUrl { get; private set; } = new Uri("https://oauth.secure.pixiv.net/auth/token");
+        //public static Uri AuthUrl { get; private set; } = new Uri("https://oauth.secure.pixiv.net/auth/token");
+        //public static Uri AuthUrl { get; private set; } = new Uri("https://oauth.secure.pixiv.net/auth/token");
+        //public static Uri AuthUrl { get; private set; } = new Uri("https://oauth.secure.pixiv.net/auth/token");
+        //public static Uri AuthUrl { get; private set; } = new Uri("https://oauth.secure.pixiv.net/auth/token");
+        //public static Uri AuthUrl { get; private set; } = new Uri("https://oauth.secure.pixiv.net/auth/token");
+        //public static Uri AuthUrl { get; private set; } = new Uri("https://oauth.secure.pixiv.net/auth/token");
     }
 }
