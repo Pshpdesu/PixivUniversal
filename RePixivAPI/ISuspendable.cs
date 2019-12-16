@@ -2,8 +2,8 @@
 {
     public interface ISuspendable
     {
-        void SuspendHttpClients();
+        void Suspend();
 
-        void ResumeHttpClients();
+        void Resume();
     }
 }

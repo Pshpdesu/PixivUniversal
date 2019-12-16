@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using static RePixivAPI.Helpers.AuthenticationConstants;
 using RePixivAPI.Objects;
+using System.Threading;
+using System.Net.Http.Headers;
+using System.Net;
 
 namespace RePixivAPI
 {
@@ -34,7 +37,7 @@ namespace RePixivAPI
         {
             RefreshToken = authres.RefreshToken;
             AccessToken = authres.AccessToken;
-            ExpiresIn = authres.ExpiresIn??0;
+            ExpiresIn = authres.ExpiresIn ?? 0;
         }
     }
 
@@ -45,17 +48,20 @@ namespace RePixivAPI
         public Tokens Tokens { get; set; }
     }
 
-    public class PixivAPICore: ISuspendable
+    public class PixivAPICore : ISuspendable
     {
+        private static Mutex authMutex { get; set; } = new Mutex();
         Credentials userCredentials { get; set; }
-        HttpClient authClient { get; set; }
         HttpClient apiClient { get; set; }
         HttpClient authApiClient { get; set; }
+        HttpClientHandler defaultHandler = new HttpClientHandler()
+        {
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+        };
 
         protected PixivAPICore()
         {
-            authClient = GetDefaultAuthClient();
-            apiClient = GetDefaultApiClient();
+            apiClient = GetDefaultPublicApiClient();
         }
 
         protected async Task Authorize(GrantType grantType, Credentials credentials)
@@ -63,24 +69,26 @@ namespace RePixivAPI
             this.userCredentials = credentials;
             var tokens = await Authorize(grantType);
 
-            authApiClient = GetDefaultAuthApiHttpClient(tokens);
+            authApiClient = GetDefaultAuthorizedApiHttpClient(tokens);
         }
 
         protected async Task<Tokens> Authorize(GrantType grantType)
         {
             //userCredentials = credentials;
             var urlData = new FormUrlEncodedContent(GetAuthorizeContent(grantType, this.userCredentials));
-            var response = await authClient.PostAsync(RePixivAPI.Helpers.ApiUrls.AuthUrl, urlData);
-            response.EnsureSuccessStatusCode();
-            var result = new Tokens(JsonConvert.DeserializeObject<Response<Authorize>>(await response.Content.ReadAsStringAsync()).response);
-            userCredentials.Tokens = result;
-            return result;
-
+            using (var authClient = GetDefaultAuthClient())
+            using (var response = await authClient.PostAsync(RePixivAPI.Helpers.ApiUrls.AuthUrl, urlData))
+            {
+                response.EnsureSuccessStatusCode();
+                var result = new Tokens(JsonConvert.DeserializeObject<Response<Authorize>>(await response.Content.ReadAsStringAsync()).response);
+                userCredentials.Tokens = result;
+                return result;
+            }
         }
 
         internal HttpClient GetDefaultAuthClient()
         {
-            var httpClient = new HttpClient();
+            var httpClient = new HttpClient(defaultHandler);
             var headers = GetAuthHeaders();
             foreach (var header in headers)
             {
@@ -89,59 +97,127 @@ namespace RePixivAPI
             return httpClient;
         }
 
-        internal HttpClient GetDefaultApiClient()
+        internal HttpClient GetDefaultPublicApiClient()
         {
-            var httpClient = new HttpClient();
+            var httpClient = new HttpClient(defaultHandler);
             return httpClient;
         }
 
-        internal HttpClient GetDefaultAuthApiHttpClient(Tokens tokens)
+        internal HttpClient GetDefaultAuthorizedApiHttpClient(Tokens tokens)
         {
-            var httpClient = new HttpClient();
-
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + tokens.AccessToken);
-
-
+            var httpClient = new HttpClient(defaultHandler);
             return httpClient;
         }
 
-        protected  async Task CheckAuthorizationAsync()
+        protected async Task CheckAuthorizationAsync()
         {
+            authMutex.WaitOne();
             if (userCredentials.Tokens.ExpirationTime >= DateTime.UtcNow)
             {
-                var tokens = await Authorize(GrantType.RefreshToken);
+                await Authorize(GrantType.RefreshToken);
+            }
+            authMutex.ReleaseMutex();
+        }
 
-                //authApiClient.Dispose();
+        protected async Task<T> SendAuthorizedApiRequestAsync<T>(
+            HttpMethod method,
+            Uri uri,
+            IDictionary<string, string> @params,
+            System.Threading.CancellationToken cancellationToken = default)
+        {
+            using (var resp = await SendAuthorizedApiRequestAsync(method, uri, @params, cancellationToken))
+            {
+                return await ProjectAsync<T>(await resp.Content.ReadAsStringAsync());
+            }
+        }
+        protected async Task<HttpResponseMessage> SendAuthorizedApiRequestAsync(
+            HttpMethod method,
+            Uri uri,
+            IDictionary<string, string> @params,
+            System.Threading.CancellationToken cancellationToken = default)
+        {
+            await CheckAuthorizationAsync();
+            return await SendRequest(authApiClient, method, uri, @params, cancellationToken);
+        }
+
+        protected async Task<T> SendPublicApiRequestAsync<T>(
+            HttpMethod method,
+            Uri uri,
+            IDictionary<string, string> @params,
+            System.Threading.CancellationToken cancellationToken = default)
+        {
+            using (var resp = await SendPublicApiRequestAsync(method, uri, @params, cancellationToken))
+            {
+                return await ProjectAsync<T>(await resp.Content.ReadAsStringAsync());
             }
         }
 
-        protected async Task<HttpResponseMessage> SendAuthorizedApiRequestAsync(HttpMethod method, Uri uri, IDictionary<string,string> @params, System.Threading.CancellationToken cancellationToken= default)
+        protected async Task<HttpResponseMessage> SendPublicApiRequestAsync(
+            HttpMethod method,
+            Uri uri,
+            IDictionary<string, string> @params,
+            System.Threading.CancellationToken cancellationToken = default)
         {
-            await CheckAuthorizationAsync();
-            HttpRequestMessage reqst = new HttpRequestMessage(method, uri);
-            reqst.Content = new FormUrlEncodedContent(@params);
-            return await authApiClient.SendAsync(reqst,cancellationToken: cancellationToken);
+            return await SendRequest(apiClient, method, uri, @params, cancellationToken);
         }
 
-        protected async Task<HttpResponseMessage> SendApiRequestAsync(HttpMethod method, Uri uri, IDictionary<string, string> @params, System.Threading.CancellationToken cancellationToken = default)
+        //TODO: Figure it out if that header is neccessary
+        //In PixeezAPI they add this header to defaultheaders
+        //httpClient.DefaultRequestHeaders.Add("Referer", "https://app-api.pixiv.net/");
+        private async Task<HttpResponseMessage> SendRequest(
+            HttpClient client,
+            HttpMethod method,
+            Uri uri,
+            IDictionary<string, string> @params,
+            CancellationToken cancellationToken)
         {
-            HttpRequestMessage reqst = new HttpRequestMessage(method, uri);
-            reqst.Content = new FormUrlEncodedContent(@params);
-            return await apiClient.SendAsync(reqst, cancellationToken: cancellationToken);
+
+            using (HttpRequestMessage reqst = new HttpRequestMessage(method, uri)
+            { Content = new FormUrlEncodedContent(@params) })
+            {
+                reqst.Headers.Authorization = new AuthenticationHeaderValue("Bearer", userCredentials.Tokens.AccessToken);
+                using (var resp = await SendRequest(client, reqst, cancellationToken))
+                {
+                    return resp.EnsureSuccessStatusCode();
+                }
+            }
         }
 
-        public void SuspendHttpClients()
+        private async Task<HttpResponseMessage> SendRequest(HttpClient client, HttpRequestMessage reqst, CancellationToken cancellationToken)
+        {
+            return await client.SendAsync(reqst, cancellationToken);
+        }
+
+        public void Suspend()
         {
             authApiClient.Dispose();
             apiClient.Dispose();
-            authClient.Dispose();
         }
 
-        public void ResumeHttpClients()
+        public void Resume()
         {
-            authClient = GetDefaultAuthClient();
-            apiClient = GetDefaultApiClient();
-            authApiClient = GetDefaultAuthApiHttpClient(userCredentials.Tokens);
+            apiClient = GetDefaultPublicApiClient();
+            authApiClient = GetDefaultAuthorizedApiHttpClient(userCredentials.Tokens);
+        }
+
+        protected async Task<T> ProjectAsync<T>(HttpResponseMessage data)
+        {
+            return await ProjectAsync<T>(await data.Content.ReadAsStringAsync());
+        }
+
+        protected async Task<T> ProjectAsync<T>(string data)
+        {
+            return await Task.Run(() => JsonConvert.DeserializeObject<T>(data));
+        }
+
+        protected async Task<T> ProjectResponseAsync<T>(HttpResponseMessage data)
+        {
+            return await ProjectResponseAsync<T>(await data.Content.ReadAsStringAsync());
+        }
+
+        protected async Task<T> ProjectResponseAsync<T>(string data)
+        {
+            return await Task.Run(() => JsonConvert.DeserializeObject<Response<T>>(data).response);
         }
         //public class AuthResult
         //{

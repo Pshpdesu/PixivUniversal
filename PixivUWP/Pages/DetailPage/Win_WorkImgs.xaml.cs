@@ -72,7 +72,7 @@ namespace PixivUWP.Pages.DetailPage
             flipview.SelectedIndex = 0;
         }
 
-        
+
         private async void Image_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var metapage = args.NewValue as MetaPages;
@@ -125,17 +125,18 @@ namespace PixivUWP.Pages.DetailPage
                 ProgressBarVisualHelper.SetYFHelperVisibility(progressRing, false);
             }
 
-            var sv = pl.Parent as ScrollViewer;
-            //if (page.Item2.PixelHeight > page.Item2.PixelWidth)
-            //{
-            //    img.Height = sv.ActualHeight;
-            //    //sv.MinZoomFactor = (float)(img.Height / sv.ActualHeight);
-            //}
-            //else
-            //{
-            //    img.Width = sv.ActualWidth;
-            //}
+        }
 
+        private float GetMinimalZoomFactor(double imageSize, double scrollViewSize)
+        {
+            if (imageSize > scrollViewSize)
+            {
+                return (float)(scrollViewSize / imageSize);
+            }
+            else
+            {
+                return (float)(imageSize / scrollViewSize);
+            }
         }
 
         private void AppBarButton_Click(object sender, RoutedEventArgs e)
@@ -172,6 +173,21 @@ namespace PixivUWP.Pages.DetailPage
                     downloadbutton.IsEnabled = true;
                 }
             }
+        }
+
+        private void Img_Loaded(object sender, RoutedEventArgs e)
+        {
+            var sv = flipview.SelectedItem;
+            //if (page.Item2.PixelHeight > page.Item2.PixelWidth)
+            //{
+            //    //img.Height = sv.ActualHeight;
+            //    sv.MinZoomFactor = GetMinimalZoomFactor(page.Item2.PixelHeight, sv.ViewportHeight);
+            //}
+            //else
+            //{
+            //    //img.Width = sv.ActualWidth;
+            //    sv.MinZoomFactor = GetMinimalZoomFactor(page.Item2.PixelWidth, sv.ViewportWidth);
+            //}
         }
     }
 }

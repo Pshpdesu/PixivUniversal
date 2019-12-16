@@ -29,15 +29,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.-
             <FlipView.ItemTemplate>
                 <DataTemplate>
                     <ScrollViewer ZoomMode="Enabled"
-                                  HorizontalScrollMode="Enabled"
-                                  CanDrag="False"
+                                  HorizontalScrollMode="Auto"
+                                  CanDrag="false"
                                   HorizontalScrollBarVisibility="Auto"
-                                  ManipulationMode="All"
-                                  MinZoomFactor="1"
-                                  >
+                                  ManipulationMode="All">
+                        <!--ManipulationMode="All">-->
                         <Grid x:Name="grid" DataContextChanged="Image_DataContextChanged">
-                            <Image x:Name="img" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Stretch="Uniform"/>
-                            <ProgressRing x:Name="pro"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Image Loaded="Img_Loaded" Grid.Column="0" Grid.Row="0" x:Name="img" HorizontalAlignment="Stretch" Stretch="Uniform"/>
+                            <ProgressRing Grid.Column="0" Grid.Row="0" x:Name="pro"/>
                         </Grid>
                     </ScrollViewer>
                 </DataTemplate>

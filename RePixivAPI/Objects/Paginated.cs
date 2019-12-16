@@ -31,6 +31,7 @@ namespace RePixivAPI.Objects
     public class Paginated<T> : List<T> , IPagenated
         where T : class, new()
     {
+        [JsonProperty("pagination")]
         public Pagination Pagination { get; set; }
     }
 
